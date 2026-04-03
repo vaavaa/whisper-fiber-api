@@ -32,3 +32,11 @@ main
 # OS X generated file
 .DS_Store
 
+# Triton model_repo: тяжёлые веса (.onnx + внешние FP16 .bin). В Git — только config.pbtxt и скрипты;
+# файлы в */1/ положите на сервер вручную, через CI-артефакт или Git LFS.
+deployments/model_repo/**/1/*.onnx
+deployments/model_repo/**/1/*.bin
+
+# Python (локально / Triton Python backend)
+__pycache__/
+*.py[cod]

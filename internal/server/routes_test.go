@@ -13,7 +13,7 @@ func TestHandler(t *testing.T) {
 	// Inject the Fiber app into the server
 	s := &FiberServer{App: app}
 	// Define a route in the Fiber app
-	app.Get("/", s.HelloWorldHandler)
+	app.All("/", s.EchoHandler)
 	// Create a test HTTP request
 	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
@@ -28,7 +28,7 @@ func TestHandler(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected status OK; got %v", resp.Status)
 	}
-	expected := "{\"message\":\"Hello World\"}"
+	expected := "{}"
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("error reading response body. Err: %v", err)

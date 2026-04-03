@@ -1,0 +1,64 @@
+# NVIDIA Triton Inference Server — шаблон для запуска model_repo из этого каталога.
+#
+# Подготовка моделей:
+#   deployments/model_repo/<имя_модели>/1/encoder_model.onnx   (и др. как в config.pbtxt)
+#
+# Смените тег образа при необходимости: https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tritonserver
+#
+# Запуск из каталога deployments/:
+#   GPU (по умолчанию):     docker compose -f docker-compose.triton.yml up --pull always
+#   Только CPU:             docker compose -f docker-compose.triton.yml --profile cpu up --pull always
+#
+# GPU-сервису нужны NVIDIA Container Toolkit и GPU. Профиль cpu — без GPU, порты 8100/8101/8102,
+# чтобы не пересекаться с triton на 8000/8001/8002.
+#
+# Важно: в текущих config.pbtxt указан instance_group kind: KIND_GPU. Для профиля cpu замените на
+# KIND_CPU (или используйте отдельный каталог model_repo с CPU-конфигами), иначе модели не загрузятся.
+#
+# preprocess_python подтягивает зависимости из 1/requirements.txt; каталог model_repo смонтирован
+# без :ro, иначе pip при старте модели не сможет установить пакеты. В проде лучше свой образ с уже установленными deps.
+
+services:
+  triton:
+    image: nvcr.io/nvidia/tritonserver:24.12-py3
+    restart: unless-stopped
+    shm_size: 1gb
+    command:
+      - tritonserver
+      - --model-repository=/models
+      - --log-verbose=0
+    environment:
+      WHISPER_FEATURE_EXTRACTOR_MODEL: ${WHISPER_FEATURE_EXTRACTOR_MODEL:-openai/whisper-medium}
+    volumes:
+      - ./model_repo:/models
+    ports:
+      - "${TRITON_HTTP_PORT:-8000}:8000"
+      - "${TRITON_GRPC_PORT:-8001}:8001"
+      - "${TRITON_METRICS_PORT:-8002}:8002"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  triton_cpu:
+    profiles:
+      - cpu
+    image: nvcr.io/nvidia/tritonserver:24.12-py3
+    restart: unless-stopped
+    shm_size: 1gb
+    command:
+      - tritonserver
+      - --model-repository=/models
+      - --log-verbose=0
+    volumes:
+      - ./model_repo:/models
+    ports:
+      - "${TRITON_CPU_HTTP_PORT:-8100}:8000"
+      - "${TRITON_CPU_GRPC_PORT:-8101}:8001"
+      - "${TRITON_CPU_METRICS_PORT:-8102}:8002"
+    environment:
+      NVIDIA_VISIBLE_DEVICES: void
+      WHISPER_FEATURE_EXTRACTOR_MODEL: ${WHISPER_FEATURE_EXTRACTOR_MODEL:-openai/whisper-medium}

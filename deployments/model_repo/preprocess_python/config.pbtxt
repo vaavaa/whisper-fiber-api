@@ -1,0 +1,26 @@
+name: "preprocess_python"
+backend: "python"
+max_batch_size: 0
+
+input [
+  {
+    name: "AUDIO_PCM"
+    data_type: TYPE_FP32
+    dims: [ -1 ]
+  }
+]
+
+output [
+  {
+    name: "MEL_FEATURES"
+    data_type: TYPE_FP32
+    dims: [ 1, 80, 3000 ]
+  }
+]
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_CPU
+  }
+]

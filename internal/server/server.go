@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/gofiber/fiber/v2"
-
 	"whisper-fiber-api/internal/database"
 )
 

@@ -15,20 +15,31 @@ func (s *FiberServer) RegisterFiberRoutes() {
 		MaxAge:           300,
 	}))
 
-	s.App.Get("/", s.HelloWorldHandler)
-
+	s.App.All("/", s.EchoHandler)
 	s.App.Get("/health", s.healthHandler)
 
+	wh := &WhisperHandler{db: s.db}
+	s.App.Post("/transcribe", wh.Transcribe)
 }
 
-func (s *FiberServer) HelloWorldHandler(c *fiber.Ctx) error {
-	resp := fiber.Map{
-		"message": "Hello World",
+func (s *FiberServer) EchoHandler(c *fiber.Ctx) error {
+	body := c.Body()
+	if len(body) > 0 {
+		if ct := c.Get("Content-Type"); ct != "" {
+			c.Set("Content-Type", ct)
+		}
+		return c.Send(body)
 	}
-
-	return c.JSON(resp)
+	if q := c.Queries(); len(q) > 0 {
+		return c.JSON(q)
+	}
+	return c.JSON(fiber.Map{})
 }
 
 func (s *FiberServer) healthHandler(c *fiber.Ctx) error {
-	return c.JSON(s.db.Health())
+	stats := s.db.Health()
+	if stats["redis_status"] != "up" {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(stats)
+	}
+	return c.JSON(stats)
 }

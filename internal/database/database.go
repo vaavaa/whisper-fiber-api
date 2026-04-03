@@ -16,6 +16,8 @@ import (
 
 type Service interface {
 	Health() map[string]string
+	// EnqueueWhisperTask сохраняет аудио в Redis и добавляет task_id в стрим whisper_tasks (продюсер очереди).
+	EnqueueWhisperTask(ctx context.Context, taskID string, audio []byte, ttl time.Duration) error
 }
 
 type service struct {
@@ -53,6 +55,28 @@ func New() Service {
 	return s
 }
 
+const (
+	WhisperTasksStream  = "whisper_tasks"
+	whisperAudioKeyPref = "audio:"
+)
+
+// EnqueueWhisperTask сохраняет бинарные данные аудио и публикует событие в Redis Stream.
+func (s *service) EnqueueWhisperTask(ctx context.Context, taskID string, audio []byte, ttl time.Duration) error {
+	key := whisperAudioKeyPref + taskID
+	if err := s.db.Set(ctx, key, audio, ttl).Err(); err != nil {
+		return err
+	}
+	_, err := s.db.XAdd(ctx, &redis.XAddArgs{
+		Stream: WhisperTasksStream,
+		Values: map[string]any{"task_id": taskID},
+	}).Result()
+	if err != nil {
+		_ = s.db.Del(ctx, key).Err()
+		return err
+	}
+	return nil
+}
+
 // Health returns the health status and statistics of the Redis server.
 func (s *service) Health() map[string]string {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // Default is now 5s
@@ -68,12 +92,11 @@ func (s *service) Health() map[string]string {
 
 // checkRedisHealth checks the health of the Redis server and adds the relevant statistics to the stats map.
 func (s *service) checkRedisHealth(ctx context.Context, stats map[string]string) map[string]string {
-	// Ping the Redis server to check its availability.
 	pong, err := s.db.Ping(ctx).Result()
-	// Note: By extracting and simplifying like this, `log.Fatalf("db down: %v", err)`
-	// can be changed into a standard error instead of a fatal error.
 	if err != nil {
-		log.Fatalf("db down: %v", err)
+		stats["redis_status"] = "down"
+		stats["redis_message"] = fmt.Sprintf("redis unavailable: %v", err)
+		return stats
 	}
 
 	// Redis is up
