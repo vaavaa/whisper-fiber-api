@@ -8,7 +8,7 @@ Under the hood you get a lean **[Fiber](https://gofiber.io/)** API in Go, **[Red
 
 ## What’s in this repo
 
-- **HTTP API** — `POST /transcribe` accepts multipart form field `audio`, stores bytes in Redis, publishes `task_id` to a Redis Stream, returns `{ "task_id": "..." }`.
+- **HTTP API** — `POST /api/v1/transcribe` accepts multipart form field `audio`, stores bytes in Redis, publishes `task_id` to a Redis Stream, returns `{ "task_id": "..." }`.
 - **Health** — `GET /health` reports Redis connectivity (503 if Redis is down).
 - **Playground** — `GET|POST /` echoes body or query (useful for smoke tests).
 - **Inference stack (templates)** — `deployments/` includes a **NVIDIA Triton** `docker-compose` and a **model repository** layout (ensemble + Python preprocess); weights are expected locally per `.gitignore`, not committed.
@@ -58,9 +58,23 @@ Under the hood you get a lean **[Fiber](https://gofiber.io/)** API in Go, **[Red
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/transcribe` | Form field **`audio`**: file upload. Returns JSON with **`task_id`**. |
+| `POST` | `/api/v1/transcribe` | Form field **`audio`**: file upload. Returns JSON with **`task_id`**. |
 | `GET` | `/health` | JSON health; **503** if Redis is unavailable. |
 | `*`| `/` | Echo handler for quick checks. |
+
+---
+
+## OpenAPI / Swagger
+
+Interactive docs are served by the app at **`/swagger/index.html`** (or open **`/swagger/`**).
+
+Spec files in the repo are generated with [swag](https://github.com/swaggo/swag). After you change Swag comments in Go sources, regenerate them from the project root:
+
+```bash
+swag init -g cmd/api/main.go
+```
+
+That refreshes `docs/docs.go`, `docs/swagger.json`, and `docs/swagger.yaml`. You may see a harmless warning if there are no `.go` files in the module root; generation still succeeds.
 
 ---
 
