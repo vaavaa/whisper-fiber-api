@@ -92,7 +92,7 @@ const docTemplate = `{
         },
         "/health": {
             "get": {
-                "description": "Returns an aggregated dependency status (e.g. ` + "`" + `redis_status` + "`" + `) and optional Triton/Whisper backend fields (` + "`" + `whisper_triton_status` + "`" + `, ` + "`" + `whisper_triton_message` + "`" + `) when WHISPER_TRITON_HTTP_URL is set. Responds with HTTP 503 when Redis is unavailable.",
+                "description": "Returns an aggregated dependency status (e.g. ` + "`" + `redis_status` + "`" + `) and optional Triton/Whisper backend fields (` + "`" + `whisper_triton_status` + "`" + `, ` + "`" + `whisper_triton_running` + "`" + `, ` + "`" + `whisper_triton_healthy` + "`" + `, ` + "`" + `whisper_triton_message` + "`" + `) when WHISPER_TRITON_HTTP_URL is set. Responds with HTTP 503 when Redis is unavailable.",
                 "produces": [
                     "application/json"
                 ],

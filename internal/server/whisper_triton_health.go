@@ -18,6 +18,8 @@ func whisperTritonHealth() map[string]string {
 	out := make(map[string]string)
 	if base == "" {
 		out["whisper_triton_status"] = "not_configured"
+		out["whisper_triton_running"] = "n/a"
+		out["whisper_triton_healthy"] = "n/a"
 		out["whisper_triton_message"] = "WHISPER_TRITON_HTTP_URL is not set"
 		return out
 	}
@@ -28,6 +30,8 @@ func whisperTritonHealth() map[string]string {
 	resp, err := client.Get(url)
 	if err != nil {
 		out["whisper_triton_status"] = "down"
+		out["whisper_triton_running"] = "false"
+		out["whisper_triton_healthy"] = "false"
 		out["whisper_triton_message"] = fmt.Sprintf("unreachable: %v", err)
 		return out
 	}
@@ -37,9 +41,13 @@ func whisperTritonHealth() map[string]string {
 	switch resp.StatusCode {
 	case http.StatusOK:
 		out["whisper_triton_status"] = "ready"
+		out["whisper_triton_running"] = "true"
+		out["whisper_triton_healthy"] = "true"
 		out["whisper_triton_message"] = "Triton ready (/v2/health/ready)"
 	default:
 		out["whisper_triton_status"] = "not_ready"
+		out["whisper_triton_running"] = "true"
+		out["whisper_triton_healthy"] = "false"
 		out["whisper_triton_message"] = fmt.Sprintf("Triton HTTP %d (not ready)", resp.StatusCode)
 	}
 	return out

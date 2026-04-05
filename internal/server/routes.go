@@ -45,7 +45,7 @@ func (s *FiberServer) EchoHandler(c *fiber.Ctx) error {
 
 // healthHandler checks Redis and related dependencies.
 // @Summary      Health check
-// @Description  Returns an aggregated dependency status (e.g. `redis_status`) and optional Triton/Whisper backend fields (`whisper_triton_status`, `whisper_triton_message`) when WHISPER_TRITON_HTTP_URL is set. Responds with HTTP 503 when Redis is unavailable.
+// @Description  Returns an aggregated dependency status (e.g. `redis_status`) and optional Triton/Whisper backend fields (`whisper_triton_status`, `whisper_triton_running`, `whisper_triton_healthy`, `whisper_triton_message`) when WHISPER_TRITON_HTTP_URL is set. Responds with HTTP 503 when Redis is unavailable.
 // @Tags         system
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}  "All checks passed"
