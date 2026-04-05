@@ -90,9 +90,3 @@ Under the hood you get a lean **[Fiber](https://gofiber.io/)** API in Go, **[Red
 | `make docker-run` / `make docker-down` | Redis stack via Docker Compose |
 | `make watch` | Live reload with [Air](https://github.com/air-verse/air) (prompts to install if missing) |
 | `make clean` | Remove built `main` |
-
----
-
-## License
-
-Specify your license here if applicable.

@@ -1,0 +1,79 @@
+basePath: /
+info:
+  contact: {}
+  description: 'HTTP API для очереди распознавания аудио (Whisper) через Redis. Версионированные
+    маршруты: `/api/v1/...`.'
+  title: Whisper Fiber API
+  version: "1.0"
+paths:
+  /:
+    get:
+      description: '**GET** — возвращает query-параметры JSON-объектом или `{}`. **Остальные
+        методы** (POST и др.) — возвращают тело запроса; при непустом теле повторяется
+        исходный `Content-Type`.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'GET: ключи из query'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Эхо запроса
+      tags:
+      - debug
+  /api/v1/transcribe:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 'Принимает аудиофайл в поле формы `audio`, создаёт `task_id` (UUID)
+        и ставит задачу в очередь. Формат: wav/mp3 и совместимые типы, поддерживаемые
+        пайплайном.'
+      parameters:
+      - description: Аудиофайл (wav/mp3)
+        in: formData
+        name: audio
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: task_id в теле JSON
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Нет поля audio или неверная форма
+          schema:
+            type: string
+        "500":
+          description: Ошибка чтения файла или записи в очередь
+          schema:
+            type: string
+      summary: Распознавание речи
+      tags:
+      - audio
+  /health:
+    get:
+      description: Возвращает агрегированный статус сервисов (например, `redis_status`).
+        При недоступности Redis — HTTP 503.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Все проверки прошли
+          schema:
+            additionalProperties: true
+            type: object
+        "503":
+          description: Сервис временно недоступен
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Проверка готовности
+      tags:
+      - system
+swagger: "2.0"

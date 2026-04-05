@@ -1,3 +1,8 @@
+// Whisper Fiber API — постановка задач распознавания речи в очередь.
+// @title           Whisper Fiber API
+// @version         1.0
+// @description     HTTP API для очереди распознавания аудио (Whisper) через Redis. Версионированные маршруты: `/api/v1/...`.
+// @BasePath        /
 package main
 
 import (
@@ -12,6 +17,7 @@ import (
 	"whisper-fiber-api/internal/server"
 
 	_ "github.com/joho/godotenv/autoload"
+	_ "whisper-fiber-api/docs"
 )
 
 func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
