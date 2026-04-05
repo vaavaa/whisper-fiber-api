@@ -17,22 +17,27 @@ const docTemplate = `{
     "paths": {
         "/": {
             "get": {
-                "description": "**GET** returns query parameters as a JSON object, or ` + "`" + `{}` + "`" + ` if empty. **Other methods** (POST, etc.) return the request body; when the body is non-empty, the original ` + "`" + `Content-Type` + "`" + ` is echoed back.",
+                "description": "Returns **` + "`" + `text/plain` + "`" + `**. If the request has a body, it is echoed as-is. If the body is empty, the query **` + "`" + `q` + "`" + `** is echoed when present; otherwise the response body is empty (HTTP 200, no error).",
                 "produces": [
-                    "application/json"
+                    "text/plain"
                 ],
                 "tags": [
                     "debug"
                 ],
-                "summary": "Echo request",
+                "summary": "Echo string",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "String to echo when the request body is empty (Try it out on GET)",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "GET: query keys and values",
+                        "description": "Request body bytes, or q, or empty",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "type": "string"
                         }
                     }
                 }

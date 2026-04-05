@@ -18,32 +18,28 @@ func (s *FiberServer) RegisterFiberRoutes() {
 
 	s.App.All("/", s.EchoHandler)
 	s.App.Get("/health", s.healthHandler)
-	s.App.Get("/swagger/*", swagger.HandlerDefault)
+	s.App.Get("/swagger/*", swagger.New(swagger.Config{InstanceName: "swagger"}))
 
 	wh := &WhisperHandler{db: s.db}
 	v1 := s.App.Group("/api/v1")
 	v1.Post("/transcribe", wh.Transcribe)
 }
 
-// EchoHandler mirrors the request for debugging.
-// @Summary      Echo request
-// @Description  **GET** returns query parameters as a JSON object, or `{}` if empty. **Other methods** (POST, etc.) return the request body; when the body is non-empty, the original `Content-Type` is echoed back.
+// EchoHandler mirrors plain text for debugging.
+// @Summary      Echo string
+// @Description  Returns **`text/plain`**. If the request has a body, it is echoed as-is. If the body is empty, the query **`q`** is echoed when present; otherwise the response body is empty (HTTP 200, no error).
 // @Tags         debug
-// @Produce      json
-// @Success      200  {object}  map[string]string  "GET: query keys and values"
+// @Produce      plain
+// @Param        q  query  string  false  "String to echo when the request body is empty (Try it out on GET)"
+// @Success      200  {string}  string  "Request body bytes, or q, or empty"
 // @Router       / [get]
 func (s *FiberServer) EchoHandler(c *fiber.Ctx) error {
-	body := c.Body()
-	if len(body) > 0 {
-		if ct := c.Get("Content-Type"); ct != "" {
-			c.Set("Content-Type", ct)
-		}
+	c.Set("Content-Type", "text/plain; charset=utf-8")
+	if body := c.Body(); len(body) > 0 {
 		return c.Send(body)
 	}
-	if q := c.Queries(); len(q) > 0 {
-		return c.JSON(q)
-	}
-	return c.JSON(fiber.Map{})
+	q := c.Query("q")
+	return c.Send([]byte(q))
 }
 
 // healthHandler checks Redis and related dependencies.

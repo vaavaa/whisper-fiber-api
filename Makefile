@@ -14,29 +14,35 @@ run:
 	@go run cmd/api/main.go
 # Redis only (for local `make run` against Docker Redis)
 docker-run:
-	@if docker compose up -d redis_bp 2>/dev/null; then \
-		: ; \
-	else \
-		echo "Falling back to Docker Compose V1"; \
+	@if docker compose version >/dev/null 2>&1; then \
+		docker compose up -d redis_bp; \
+	elif command -v docker-compose >/dev/null 2>&1; then \
 		docker-compose up -d redis_bp; \
+	else \
+		echo "Docker Compose not found. Install the Docker Compose V2 plugin (docker compose)."; \
+		exit 1; \
 	fi
 
 # API + Redis (builds image from Dockerfile)
 docker-up:
-	@if docker compose up --build 2>/dev/null; then \
-		: ; \
-	else \
-		echo "Falling back to Docker Compose V1"; \
+	@if docker compose version >/dev/null 2>&1; then \
+		docker compose up --build; \
+	elif command -v docker-compose >/dev/null 2>&1; then \
 		docker-compose up --build; \
+	else \
+		echo "Docker Compose not found. Install the Docker Compose V2 plugin (docker compose)."; \
+		exit 1; \
 	fi
 
 # Shutdown Compose services
 docker-down:
-	@if docker compose down 2>/dev/null; then \
-		: ; \
-	else \
-		echo "Falling back to Docker Compose V1"; \
+	@if docker compose version >/dev/null 2>&1; then \
+		docker compose down; \
+	elif command -v docker-compose >/dev/null 2>&1; then \
 		docker-compose down; \
+	else \
+		echo "Docker Compose not found. Install the Docker Compose V2 plugin (docker compose)."; \
+		exit 1; \
 	fi
 
 # Test the application

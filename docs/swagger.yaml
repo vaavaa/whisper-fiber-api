@@ -8,19 +8,23 @@ info:
 paths:
   /:
     get:
-      description: '**GET** returns query parameters as a JSON object, or `{}` if
-        empty. **Other methods** (POST, etc.) return the request body; when the body
-        is non-empty, the original `Content-Type` is echoed back.'
+      description: Returns **`text/plain`**. If the request has a body, it is echoed
+        as-is. If the body is empty, the query **`q`** is echoed when present; otherwise
+        the response body is empty (HTTP 200, no error).
+      parameters:
+      - description: String to echo when the request body is empty (Try it out on
+          GET)
+        in: query
+        name: q
+        type: string
       produces:
-      - application/json
+      - text/plain
       responses:
         "200":
-          description: 'GET: query keys and values'
+          description: Request body bytes, or q, or empty
           schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Echo request
+            type: string
+      summary: Echo string
       tags:
       - debug
   /api/v1/transcribe:
