@@ -20,10 +20,15 @@ services:
       - "${API_PORT:-8080}:8080"
     environment:
       PORT: "8080"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      LOG_FORMAT: "${LOG_FORMAT:-text}"
+      LOG_VERBOSITY: "${LOG_VERBOSITY:-standard}"
       BLUEPRINT_DB_ADDRESS: redis_bp
       BLUEPRINT_DB_PORT: "6379"
       BLUEPRINT_DB_PASSWORD: "${BLUEPRINT_DB_PASSWORD:-}"
       BLUEPRINT_DB_DATABASE: "${BLUEPRINT_DB_DATABASE:-0}"
+      # Опционально: базовый URL HTTP Triton (Whisper model_repo), например http://triton:8000
+      WHISPER_TRITON_HTTP_URL: "${WHISPER_TRITON_HTTP_URL:-}"
     depends_on:
       redis_bp:
         condition: service_healthy

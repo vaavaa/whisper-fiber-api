@@ -6,27 +6,6 @@ info:
   title: Whisper Fiber API
   version: "1.0"
 paths:
-  /:
-    get:
-      description: Returns **`text/plain`**. If the request has a body, it is echoed
-        as-is. If the body is empty, the query **`q`** is echoed when present; otherwise
-        the response body is empty (HTTP 200, no error).
-      parameters:
-      - description: String to echo when the request body is empty (Try it out on
-          GET)
-        in: query
-        name: q
-        type: string
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: Request body bytes, or q, or empty
-          schema:
-            type: string
-      summary: Echo string
-      tags:
-      - debug
   /api/v1/transcribe:
     post:
       consumes:
@@ -60,10 +39,33 @@ paths:
       summary: Speech-to-text enqueue
       tags:
       - audio
+  /echo:
+    get:
+      description: Returns **`text/plain`**. If the request has a body, it is echoed
+        as-is. If the body is empty, the query **`q`** is echoed when present; otherwise
+        the response body is empty (HTTP 200, no error).
+      parameters:
+      - description: 'String to echo when the request body is empty (Swagger: use
+          GET /echo)'
+        in: query
+        name: q
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Request body bytes, or q, or empty
+          schema:
+            type: string
+      summary: Echo string
+      tags:
+      - debug
   /health:
     get:
-      description: Returns an aggregated dependency status (e.g. `redis_status`).
-        Responds with HTTP 503 when Redis is unavailable.
+      description: Returns an aggregated dependency status (e.g. `redis_status`) and
+        optional Triton/Whisper backend fields (`whisper_triton_status`, `whisper_triton_message`)
+        when WHISPER_TRITON_HTTP_URL is set. Responds with HTTP 503 when Redis is
+        unavailable.
       produces:
       - application/json
       responses:

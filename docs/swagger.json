@@ -8,34 +8,6 @@
     },
     "basePath": "/",
     "paths": {
-        "/": {
-            "get": {
-                "description": "Returns **`text/plain`**. If the request has a body, it is echoed as-is. If the body is empty, the query **`q`** is echoed when present; otherwise the response body is empty (HTTP 200, no error).",
-                "produces": [
-                    "text/plain"
-                ],
-                "tags": [
-                    "debug"
-                ],
-                "summary": "Echo string",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "String to echo when the request body is empty (Try it out on GET)",
-                        "name": "q",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Request body bytes, or q, or empty",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/transcribe": {
             "post": {
                 "description": "Accepts an audio file in the multipart form field `audio`, generates a `task_id` (UUID), and enqueues the job. Use WAV/MP3 or other formats supported by your downstream pipeline.",
@@ -83,9 +55,37 @@
                 }
             }
         },
+        "/echo": {
+            "get": {
+                "description": "Returns **`text/plain`**. If the request has a body, it is echoed as-is. If the body is empty, the query **`q`** is echoed when present; otherwise the response body is empty (HTTP 200, no error).",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "debug"
+                ],
+                "summary": "Echo string",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "String to echo when the request body is empty (Swagger: use GET /echo)",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Request body bytes, or q, or empty",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
-                "description": "Returns an aggregated dependency status (e.g. `redis_status`). Responds with HTTP 503 when Redis is unavailable.",
+                "description": "Returns an aggregated dependency status (e.g. `redis_status`) and optional Triton/Whisper backend fields (`whisper_triton_status`, `whisper_triton_message`) when WHISPER_TRITON_HTTP_URL is set. Responds with HTTP 503 when Redis is unavailable.",
                 "produces": [
                     "application/json"
                 ],

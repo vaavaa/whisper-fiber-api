@@ -10,7 +10,7 @@ Under the hood you get a lean **[Fiber](https://gofiber.io/)** API in Go, **[Red
 
 - **HTTP API** — `POST /api/v1/transcribe` accepts multipart form field `audio`, stores bytes in Redis, publishes `task_id` to a Redis Stream, returns `{ "task_id": "..." }`.
 - **Health** — `GET /health` reports Redis connectivity (503 if Redis is down).
-- **Playground** — `GET|POST /` echoes body or query (useful for smoke tests).
+- **Playground** — `GET|POST /echo` (same behavior on `GET|POST /`) echoes plain text: request body if non-empty, else query `q`. Prefer **`/echo`** in Swagger UI (“Try it out” for `/` can fail with an empty `q` in some Swagger builds).
 - **Inference stack (templates)** — `deployments/` includes a **NVIDIA Triton** `docker-compose` and a **model repository** layout (ensemble + Python preprocess); weights are expected locally per `.gitignore`, not committed.
 - **Go Triton client** — gRPC helpers for ensemble / decoder calls via [`go-triton-client`](https://github.com/Trendyol/go-triton-client).
 
@@ -101,8 +101,32 @@ That refreshes `docs/docs.go`, `docs/swagger.json`, and `docs/swagger.yaml`. You
 | `BLUEPRINT_DB_PORT` | Redis port (Compose maps host port → container 6379). |
 | `BLUEPRINT_DB_PASSWORD` | Redis password (empty if none). |
 | `BLUEPRINT_DB_DATABASE` | Redis **logical DB index** (string parsed as int). |
+| `LOG_LEVEL` | Log level: `debug`, `info`, `warn`, `error` (default **`info`**). |
+| `LOG_FORMAT` | `text` or **`json`**. Use **`json`** for log shippers (Filebeat, Fluent Bit → Elasticsearch / Kibana). |
+| `LOG_VERBOSITY` | **`standard`** or **`verbose`**. See [Logging](#logging) below. |
 
 [`godotenv`](https://github.com/joho/godotenv) auto-loads a `.env` file if present.
+
+---
+
+## Logging
+
+The API uses the standard library [`log/slog`](https://pkg.go.dev/log/slog) (stderr by default). In Docker, use `docker compose logs -f api` to follow output.
+
+| `LOG_VERBOSITY` | HTTP request lines |
+|-----------------|-------------------|
+| **`standard`** (default) | One compact **message** per request, e.g. `GET /health 200 12ms`. Errors append `: <err>`. |
+| **`verbose`** | Structured fields: `method`, `path`, `route`, `status`, `latency_ms`, `ip`, `query`, `user_agent`, `content_type`, `bytes_in`, `bytes_out`, and `err` when present. Noisier in the terminal; pairs well with **`LOG_FORMAT=json`**. |
+
+Other messages (startup, graceful shutdown, panics with stack traces) always go through the same logger; tune visibility with **`LOG_LEVEL`** (`debug` shows more).
+
+**Compose** passes through `LOG_LEVEL`, `LOG_FORMAT`, and `LOG_VERBOSITY` (see `docker-compose.yml`). Example:
+
+```bash
+LOG_LEVEL=debug LOG_VERBOSITY=verbose docker compose up
+```
+
+For production-style shipping to Kibana, prefer **`LOG_FORMAT=json`** and **`LOG_VERBOSITY=verbose`** (or keep verbosity standard if you only need sparse JSON lines).
 
 ---
 

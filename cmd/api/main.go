@@ -8,12 +8,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 	"time"
+	"whisper-fiber-api/internal/logging"
 	"whisper-fiber-api/internal/server"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -28,7 +29,7 @@ func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
 	// Listen for the interrupt signal.
 	<-ctx.Done()
 
-	log.Println("shutting down gracefully, press Ctrl+C again to force")
+	slog.Info("shutting down gracefully, press Ctrl+C again to force")
 	stop() // Allow Ctrl+C to force shutdown
 
 	// The context is used to inform the server it has 5 seconds to finish
@@ -36,16 +37,17 @@ func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := fiberServer.ShutdownWithContext(ctx); err != nil {
-		log.Printf("Server forced to shutdown with error: %v", err)
+		slog.Error("server forced shutdown", "err", err)
 	}
 
-	log.Println("Server exiting")
+	slog.Info("server exiting")
 
 	// Notify the main goroutine that the shutdown is complete
 	done <- true
 }
 
 func main() {
+	logging.InitFromEnv(os.Stderr)
 
 	server := server.New()
 
@@ -56,9 +58,10 @@ func main() {
 
 	go func() {
 		port, _ := strconv.Atoi(os.Getenv("PORT"))
-		err := server.Listen(fmt.Sprintf(":%d", port))
-		if err != nil {
-			panic(fmt.Sprintf("http server error: %s", err))
+		slog.Info("http server listening", "addr", fmt.Sprintf(":%d", port))
+		if err := server.Listen(fmt.Sprintf(":%d", port)); err != nil {
+			slog.Error("http server error", "err", err)
+			panic(err)
 		}
 	}()
 
@@ -67,5 +70,5 @@ func main() {
 
 	// Wait for the graceful shutdown to complete
 	<-done
-	log.Println("Graceful shutdown complete.")
+	slog.Info("graceful shutdown complete")
 }
