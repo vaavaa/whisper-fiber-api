@@ -12,8 +12,17 @@ build:
 # Run the application
 run:
 	@go run cmd/api/main.go
-# Create DB container
+# Redis only (for local `make run` against Docker Redis)
 docker-run:
+	@if docker compose up -d redis_bp 2>/dev/null; then \
+		: ; \
+	else \
+		echo "Falling back to Docker Compose V1"; \
+		docker-compose up -d redis_bp; \
+	fi
+
+# API + Redis (builds image from Dockerfile)
+docker-up:
 	@if docker compose up --build 2>/dev/null; then \
 		: ; \
 	else \
@@ -21,7 +30,7 @@ docker-run:
 		docker-compose up --build; \
 	fi
 
-# Shutdown DB container
+# Shutdown Compose services
 docker-down:
 	@if docker compose down 2>/dev/null; then \
 		: ; \
@@ -61,4 +70,4 @@ watch:
             fi; \
         fi
 
-.PHONY: all build run test clean watch docker-run docker-down itest
+.PHONY: all build run test clean watch docker-run docker-up docker-down itest

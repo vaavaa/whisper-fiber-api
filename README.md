@@ -52,6 +52,20 @@ Under the hood you get a lean **[Fiber](https://gofiber.io/)** API in Go, **[Red
 
 4. **(Optional) Triton** — from `deployments/`, follow comments in `docker-compose.triton.yml` to run the model repository on GPU or CPU. You still need model artifacts (e.g. ONNX) as described there.
 
+### Run API and Redis in Docker
+
+From the repo root, build the API image and start both services:
+
+```bash
+make docker-up
+```
+
+- HTTP API is exposed as **`${API_PORT:-8080}` → container port `8080`** (e.g. `http://localhost:8080/health`, Swagger at `http://localhost:8080/swagger/index.html`).
+- Redis is reachable from the host on **`${BLUEPRINT_DB_PORT:-6379}`** (same as when you only run `make docker-run`).
+- Inside Compose, the API uses **`BLUEPRINT_DB_ADDRESS=redis_bp`** and **`BLUEPRINT_DB_PORT=6379`**; you do not need a local `.env` for that path.
+
+Stop and remove containers: `make docker-down`.
+
 ---
 
 ## API
@@ -101,6 +115,7 @@ That refreshes `docs/docs.go`, `docs/swagger.json`, and `docs/swagger.yaml`. You
 | `make run` | `go run cmd/api/main.go` |
 | `make test` | `go test ./... -v` |
 | `make itest` | Integration tests (`internal/database`) |
-| `make docker-run` / `make docker-down` | Redis stack via Docker Compose |
+| `make docker-run` / `make docker-down` | Redis only (`redis_bp`) via Docker Compose — for local `make run` |
+| `make docker-up` | Build `Dockerfile` and run **API + Redis** (`api` + `redis_bp`) |
 | `make watch` | Live reload with [Air](https://github.com/air-verse/air) (prompts to install if missing) |
 | `make clean` | Remove built `main` |

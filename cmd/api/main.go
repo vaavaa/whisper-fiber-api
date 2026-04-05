@@ -1,7 +1,7 @@
-// Whisper Fiber API — постановка задач распознавания речи в очередь.
+// Whisper Fiber API — enqueue speech-to-text jobs for asynchronous processing.
 // @title           Whisper Fiber API
 // @version         1.0
-// @description     HTTP API для очереди распознавания аудио (Whisper) через Redis. Версионированные маршруты: `/api/v1/...`.
+// @description     HTTP API that queues Whisper-style audio transcription jobs via Redis. Versioned routes live under `/api/v1/...`.
 // @BasePath        /
 package main
 

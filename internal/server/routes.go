@@ -25,12 +25,12 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	v1.Post("/transcribe", wh.Transcribe)
 }
 
-// EchoHandler отражает запрос для отладки.
-// @Summary      Эхо запроса
-// @Description  **GET** — возвращает query-параметры JSON-объектом или `{}`. **Остальные методы** (POST и др.) — возвращают тело запроса; при непустом теле повторяется исходный `Content-Type`.
+// EchoHandler mirrors the request for debugging.
+// @Summary      Echo request
+// @Description  **GET** returns query parameters as a JSON object, or `{}` if empty. **Other methods** (POST, etc.) return the request body; when the body is non-empty, the original `Content-Type` is echoed back.
 // @Tags         debug
 // @Produce      json
-// @Success      200  {object}  map[string]string  "GET: ключи из query"
+// @Success      200  {object}  map[string]string  "GET: query keys and values"
 // @Router       / [get]
 func (s *FiberServer) EchoHandler(c *fiber.Ctx) error {
 	body := c.Body()
@@ -46,13 +46,13 @@ func (s *FiberServer) EchoHandler(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{})
 }
 
-// healthHandler проверяет доступность Redis и связанных зависимостей.
-// @Summary      Проверка готовности
-// @Description  Возвращает агрегированный статус сервисов (например, `redis_status`). При недоступности Redis — HTTP 503.
+// healthHandler checks Redis and related dependencies.
+// @Summary      Health check
+// @Description  Returns an aggregated dependency status (e.g. `redis_status`). Responds with HTTP 503 when Redis is unavailable.
 // @Tags         system
 // @Produce      json
-// @Success      200  {object}  map[string]interface{}  "Все проверки прошли"
-// @Failure      503  {object}  map[string]interface{}  "Сервис временно недоступен"
+// @Success      200  {object}  map[string]interface{}  "All checks passed"
+// @Failure      503  {object}  map[string]interface{}  "Service temporarily unavailable"
 // @Router       /health [get]
 func (s *FiberServer) healthHandler(c *fiber.Ctx) error {
 	stats := s.db.Health()

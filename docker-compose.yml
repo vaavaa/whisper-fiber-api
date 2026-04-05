@@ -3,4 +3,27 @@ services:
     image: redis:7.2.4
     restart: unless-stopped
     ports:
-      - "${BLUEPRINT_DB_PORT}:6379"
+      - "${BLUEPRINT_DB_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      PORT: "8080"
+      BLUEPRINT_DB_ADDRESS: redis_bp
+      BLUEPRINT_DB_PORT: "6379"
+      BLUEPRINT_DB_PASSWORD: "${BLUEPRINT_DB_PASSWORD:-}"
+      BLUEPRINT_DB_DATABASE: "${BLUEPRINT_DB_DATABASE:-0}"
+    depends_on:
+      redis_bp:
+        condition: service_healthy

@@ -1,0 +1,9 @@
+.git
+.github
+.cursor
+.idea
+*.md
+main
+.env
+.env.*
+deployments

@@ -17,17 +17,17 @@ const docTemplate = `{
     "paths": {
         "/": {
             "get": {
-                "description": "**GET** — возвращает query-параметры JSON-объектом или ` + "`" + `{}` + "`" + `. **Остальные методы** (POST и др.) — возвращают тело запроса; при непустом теле повторяется исходный ` + "`" + `Content-Type` + "`" + `.",
+                "description": "**GET** returns query parameters as a JSON object, or ` + "`" + `{}` + "`" + ` if empty. **Other methods** (POST, etc.) return the request body; when the body is non-empty, the original ` + "`" + `Content-Type` + "`" + ` is echoed back.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "debug"
                 ],
-                "summary": "Эхо запроса",
+                "summary": "Echo request",
                 "responses": {
                     "200": {
-                        "description": "GET: ключи из query",
+                        "description": "GET: query keys and values",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -40,7 +40,7 @@ const docTemplate = `{
         },
         "/api/v1/transcribe": {
             "post": {
-                "description": "Принимает аудиофайл в поле формы ` + "`" + `audio` + "`" + `, создаёт ` + "`" + `task_id` + "`" + ` (UUID) и ставит задачу в очередь. Формат: wav/mp3 и совместимые типы, поддерживаемые пайплайном.",
+                "description": "Accepts an audio file in the multipart form field ` + "`" + `audio` + "`" + `, generates a ` + "`" + `task_id` + "`" + ` (UUID), and enqueues the job. Use WAV/MP3 or other formats supported by your downstream pipeline.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -50,11 +50,11 @@ const docTemplate = `{
                 "tags": [
                     "audio"
                 ],
-                "summary": "Распознавание речи",
+                "summary": "Speech-to-text enqueue",
                 "parameters": [
                     {
                         "type": "file",
-                        "description": "Аудиофайл (wav/mp3)",
+                        "description": "Audio file (e.g. wav/mp3)",
                         "name": "audio",
                         "in": "formData",
                         "required": true
@@ -62,7 +62,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "task_id в теле JSON",
+                        "description": "JSON body includes task_id",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -71,13 +71,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Нет поля audio или неверная форма",
+                        "description": "Missing audio field or invalid multipart form",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "500": {
-                        "description": "Ошибка чтения файла или записи в очередь",
+                        "description": "Failed to read the uploaded file or enqueue the job",
                         "schema": {
                             "type": "string"
                         }
@@ -87,24 +87,24 @@ const docTemplate = `{
         },
         "/health": {
             "get": {
-                "description": "Возвращает агрегированный статус сервисов (например, ` + "`" + `redis_status` + "`" + `). При недоступности Redis — HTTP 503.",
+                "description": "Returns an aggregated dependency status (e.g. ` + "`" + `redis_status` + "`" + `). Responds with HTTP 503 when Redis is unavailable.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "system"
                 ],
-                "summary": "Проверка готовности",
+                "summary": "Health check",
                 "responses": {
                     "200": {
-                        "description": "Все проверки прошли",
+                        "description": "All checks passed",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "503": {
-                        "description": "Сервис временно недоступен",
+                        "description": "Service temporarily unavailable",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -123,7 +123,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Whisper Fiber API",
-	Description:      "HTTP API для очереди распознавания аудио (Whisper) через Redis. Версионированные маршруты: `/api/v1/...`.",
+	Description:      "HTTP API that queues Whisper-style audio transcription jobs via Redis. Versioned routes live under `/api/v1/...`.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
